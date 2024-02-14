@@ -15,7 +15,7 @@ export default [
  {
     component: 'CNavItem',
     name: 'Device List',
-    to: '/device list',
+    to: '/user-management',
     icon: 'cil-chart-pie',
   },
   {

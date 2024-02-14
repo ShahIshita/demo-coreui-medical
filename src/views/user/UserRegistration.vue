@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Toast Section -->
+     <!-- Toast Section -->
     <CToast
       :autohide="false"
       color="primary"
@@ -73,51 +73,121 @@
           <div class="login--box">
             <CImage :src="logoBlack" contain class="logo-img" />
             <div class="inner-block">
-              <h2>Welcome Back!</h2>
-              <p class="mt-5" style="font-size: 20px">Login into your account</p>
+              <h2>Register</h2>
+              <p>Signup for create an account</p>
 
-              <CForm class="mt-4" ref="form" @submit.prevent="login">
+              <CForm v-if="currentPage === 1" @submit.prevent="nextPage">
+                <p>Step 1 of 2</p>
+                <h3>Personal Details</h3>
                 <div class="input-group">
                   <CInputGroup>
                     <CFormInput
-                      type="email"
-                      v-model="email"
-                      name="email"
-                      placeholder="Email"
+                      type="text"
+                      v-model="formData.firstName"
+                      name="firstName"
+                      placeholder="First Name"
                       required
                     />
-
-                    <CInputGroupText>
-                      <CIcon name="cil-envelope-closed" />
-                    </CInputGroupText>
                   </CInputGroup>
 
                   <CInputGroup class="mt-2">
                     <CFormInput
-                      v-model="password"
-                      name="password"
-                      placeholder="Password"
-                      hint="At least 6 characters"
+                      type="text"
+                      v-model="formData.lastName"
+                      name="lastName"
+                      placeholder="Last Name"
                       required
                     />
-
-                    <CInputGroupText>
-                      <CIcon name="cil-lock-locked" />
-                    </CInputGroupText>
                   </CInputGroup>
 
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="date"
+                      v-model="formData.dateOfBirth"
+                      name="dateOfBirth"
+                      placeholder="Date of Birth"
+                      required
+                    />
+                  </CInputGroup>
+
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="text"
+                      v-model="formData.medicalId"
+                      name="medicalId"
+                      placeholder="Medical ID"
+                      required
+                    />
+                  </CInputGroup>
                   <CButton class="mt-2" color="warning" type="submit" width="100%"
-                    >Login</CButton
+                    >Next</CButton
+                  >
+                </div>
+              </CForm>
+
+              <CForm v-if="currentPage === 2" @submit.prevent="submitForm">
+                <p>Step 2 of 2</p>
+                <h3>Signup Details</h3>
+                <div class="input-group">
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="email"
+                      v-model="formData.email"
+                      name="email"
+                      placeholder="Email"
+                      required
+                    />
+                  </CInputGroup>
+
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="password"
+                      v-model="formData.password"
+                      name="password"
+                      placeholder="Password"
+                      required
+                    />
+                  </CInputGroup>
+
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="password"
+                      v-model="formData.confirmPassword"
+                      name="confirmPassword"
+                      placeholder="Confirm Password"
+                      required
+                    />
+                  </CInputGroup>
+
+                  <CInputGroup class="mt-2">
+                    <CFormInput
+                      type="tel"
+                      v-model="formData.phoneNumber"
+                      name="phoneNumber"
+                      placeholder="Phone Number"
+                      required
+                    />
+                  </CInputGroup>
+
+                  <CButton
+                    class="previousButton"
+                    type="button"
+                    @click="prevPage"
+                    width="50%"
+                    ><CImage :src="arrowBack"
+                  /></CButton>
+                  <CButton class="submitButton" type="submit" width="100%"
+                    >Submit</CButton
                   >
                 </div>
               </CForm>
             </div>
-            <h5 class="font-weight-regular">
-              © Copyright 2022 Bacancy. All Right Reserved.
-            </h5>
+            <!-- <p class="font-weight-regular">Allready have a account? Login</p> -->
+            <h5>© Copyright 2022 Bacancy. All Right Reserved.</h5>
           </div>
         </CCol>
       </CRow>
+      
     </CContainer>
   </div>
 </template>
@@ -131,9 +201,24 @@ import loginBuilding from "@/assets/data/login-building.png";
 import MaskGroup from "@/assets/data/Mask Black.svg";
 import MaskGroup1 from "@/assets/data/Mask 1.png";
 import logoBlack from "@/assets/data/logo-black.png";
+import arrowBack from "@/assets/data/arrow-back.svg";
 import { authService } from "@/services/AuthService";
-import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { ref } from "vue";
+const router = useRouter();
+const currentPage = ref(1);
+const formData = ref({
+  firstName: "",
+  lastName: "",
+  dateOfBirth: "",
+  medicalId: "",
+  google: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  phoneNumber: "",
+});
+
 const toastVisible = ref(false);
 const toastMessage = ref("");
 
@@ -145,35 +230,26 @@ const showToast = (message) => {
 const hideToast = () => {
   toastVisible.value = false;
 };
+const nextPage = () => {
+  currentPage.value++;
+};
 
-const email = ref("");
-const password = ref("");
-const router = useRouter();
+const prevPage = () => {
+  currentPage.value--;
+};
 
-const login = async () => {
-  const result = await authService.login(email.value, password.value);
+const submitForm = async () => {
+  const result = await authService.register(
+    formData.value.email,
+    formData.value.password
+  );
 
   if (result.success) {
-    // Login successful, you may choose to redirect or show a success message
     showToast(result.message, "success");
-    router.push("/dashboard");
+    router.push("/login");
   } else {
-    // Login failed, show an error message
     showToast(result.message, "danger");
   }
-
-  // Simple static login logic (replace with your actual authentication logic)
-  // const hardcodedemail = "demo@gmail.com";
-  // const hardcodedPassword = "demo";
-
-  // if (email.value === hardcodedemail && password.value === hardcodedPassword) {
-  //   // Successful login
-  //   console.log("Login successful");
-  //   router.push("/dashboard"); // Redirect to the dashboard route
-  // } else {
-  //   // Failed login
-  //   console.log("Login failed");
-  // }
 };
 </script>
 
@@ -199,6 +275,9 @@ h1 {
 h2 {
   font-size: 36px;
 }
+h3 {
+  color: #f58220;
+}
 h5 {
   font: normal normal medium 16px/19px Gilroy;
   margin-top: 250px;
@@ -218,6 +297,23 @@ h5 {
   flex-grow: 0;
   width: 33.33%;
   max-width: 200px;
+}
+.submitButton {
+  width: 350px;
+  background: #f58220 0% 0% no-repeat padding-box;
+  margin-top: 10px;
+  height: 50px;
+  margin-left: 10px;
+  border-radius: 10px;
+  opacity: 1;
+  text-align: center;
+  font: normal normal bold 18px/23px Gilroy ☞;
+  letter-spacing: 0px;
+  color: #ffffff;
+}
+.previousButton {
+  height: 20px;
+  margin-top: 15px;
 }
 .mini-box-item .item {
   padding: 12%;
@@ -270,11 +366,10 @@ p {
 }
 .mt-2 {
   width: 420px;
-  height: 60px;
+  height: 50px;
   background: #f58220 0% 0% no-repeat padding-box;
   border-radius: 10px;
   opacity: 1;
-  /* UI Properties */
   text-align: center;
   font: normal normal bold 18px/23px Gilroy ☞;
   letter-spacing: 0px;
@@ -293,7 +388,7 @@ p {
 }
 .input-group {
   width: 420px;
-  height: 60px;
+  height: 50px;
   background: var(--base-color) 0% 0% no-repeat padding-box;
   background: #2b2934 0% 0% no-repeat padding-box;
   border-radius: 10px;
